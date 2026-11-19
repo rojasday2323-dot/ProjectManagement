@@ -1,0 +1,20 @@
+@baseUrl = http://localhost:5070
+@apiAccessToken = <API_ACCESS_TOKEN_FROM_MSAL>
+@adoProjectId = <VISIBLE_AZURE_DEVOPS_PROJECT_GUID>
+@workItemId = 1
+
+### Connection test (requires an API bearer token acquired by the SPA)
+GET {{baseUrl}}/api/azure-devops/status
+Authorization: Bearer {{apiAccessToken}}
+
+### Projects visible to the signed-in user
+GET {{baseUrl}}/api/azure-devops/projects
+Authorization: Bearer {{apiAccessToken}}
+
+### Work items in a visible project
+GET {{baseUrl}}/api/azure-devops/projects/{{adoProjectId}}/work-items?top=100
+Authorization: Bearer {{apiAccessToken}}
+
+### Work item details and existing local links
+GET {{baseUrl}}/api/azure-devops/work-items/{{workItemId}}
+Authorization: Bearer {{apiAccessToken}}

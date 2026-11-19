@@ -1,0 +1,149 @@
+@baseUrl = http://localhost:5070
+@projectId = 1
+@documentId = 1
+@analysisId = 1
+@proposalId = replace-with-proposal-id-from-analysis
+@developerId = 1
+
+### Upload a TXT document (the selected project is optional)
+POST {{baseUrl}}/api/documents/files
+Content-Type: multipart/form-data; boundary=upload-boundary
+
+--upload-boundary
+Content-Disposition: form-data; name="projectId"
+
+{{projectId}}
+--upload-boundary
+Content-Disposition: form-data; name="file"; filename="meeting-notes.txt"
+Content-Type: text/plain
+
+Meeting notes: review the project milestones and next steps.
+--upload-boundary--
+
+### Save meeting notes as text
+POST {{baseUrl}}/api/documents/notes
+Content-Type: application/json
+
+{
+  "projectId": {{projectId}},
+  "title": "Weekly project review",
+  "text": "Decisions: review open risks. Next steps: update the delivery plan."
+}
+
+### Extract text from a transient attachment (the original is not stored)
+POST {{baseUrl}}/api/notes/attachments/extract
+Content-Type: multipart/form-data; boundary=note-boundary
+
+--note-boundary
+Content-Disposition: form-data; name="file"; filename="meeting.txt"
+Content-Type: text/plain
+
+The team agreed to review the release plan on November 15.
+--note-boundary--
+
+### Ask about the current draft and saved notes in a project (requires Azure AI Foundry)
+POST {{baseUrl}}/api/notes/chat
+Content-Type: application/json
+
+{
+  "projectId": {{projectId}},
+  "currentNoteId": null,
+  "currentTitle": "Weekly project review",
+  "currentText": "The release plan will be reviewed on November 15.",
+  "question": "When will the release plan be reviewed?"
+}
+
+### List all documents and notes, including general records
+GET {{baseUrl}}/api/documents
+
+### Search and filter documents by project and type
+GET {{baseUrl}}/api/documents?search=meeting&projectId={{projectId}}&type=TXT
+
+### List general (unassociated) documents and notes
+GET {{baseUrl}}/api/documents?unassignedOnly=true
+
+### List documents and notes for a project
+GET {{baseUrl}}/api/documents/projects/{{projectId}}
+
+### Read document metadata and extracted text
+GET {{baseUrl}}/api/documents/{{documentId}}
+
+### Download the original file (upload records only)
+GET {{baseUrl}}/api/documents/{{documentId}}/file
+
+### Edit a note
+PUT {{baseUrl}}/api/documents/{{documentId}}/notes
+Content-Type: application/json
+
+{
+  "projectId": null,
+  "title": "Weekly project review - updated",
+  "text": "Updated decisions and follow-up steps."
+}
+
+### Delete a document or note; its analysis history remains traceable
+DELETE {{baseUrl}}/api/documents/{{documentId}}
+
+### Get active developers for assignment selectors
+GET {{baseUrl}}/api/developers
+
+### Get all developers, including inactive records
+GET {{baseUrl}}/api/developers?includeInactive=true
+
+### Create a developer without inventing personal contact information
+POST {{baseUrl}}/api/developers
+Content-Type: application/json
+
+{
+  "displayName": "Nombre Apellido",
+  "specialty": "",
+  "seniority": ""
+}
+
+### Update a developer
+PUT {{baseUrl}}/api/developers/{{developerId}}
+Content-Type: application/json
+
+{
+  "displayName": "Nombre Apellido",
+  "specialty": "Backend",
+  "seniority": "Senior"
+}
+
+### Deactivate a developer without deleting history
+PATCH {{baseUrl}}/api/developers/{{developerId}}/status
+Content-Type: application/json
+
+{
+  "isActive": false
+}
+
+### Project does not exist
+GET {{baseUrl}}/api/documents/projects/999999
+
+### Analyze a prepared document (requires Azure AI Foundry configuration)
+POST {{baseUrl}}/api/documents/{{documentId}}/analyze
+
+### List persisted analysis proposals for the document
+GET {{baseUrl}}/api/documents/{{documentId}}/analyses
+
+### Accept one proposal, including reviewed corrections; required commitment fields must be complete
+PATCH {{baseUrl}}/api/analyses/{{analysisId}}/proposals/{{proposalId}}
+Content-Type: application/json
+
+{
+  "decision": "Accepted",
+  "correctedProposal": null
+}
+
+### Reject one proposal without creating a project record
+PATCH {{baseUrl}}/api/analyses/{{analysisId}}/proposals/{{proposalId}}
+Content-Type: application/json
+
+{
+  "decision": "Rejected",
+  "correctedProposal": null
+}
+
+### Verify accepted commitments in the project timeline
+GET {{baseUrl}}/api/projects/{{projectId}}/timeline

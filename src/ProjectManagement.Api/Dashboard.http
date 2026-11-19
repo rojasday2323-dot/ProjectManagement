@@ -1,0 +1,12 @@
+@baseUrl = http://localhost:5070
+@apiAccessToken = <API_ACCESS_TOKEN_FROM_MSAL>
+
+### Dashboard summary (requires an authenticated API token)
+GET {{baseUrl}}/api/dashboard/summary
+Authorization: Bearer {{apiAccessToken}}
+Accept: application/json
+
+### Projects with commitment status counts and responsible Product Owners
+GET {{baseUrl}}/api/projects
+Authorization: Bearer {{apiAccessToken}}
+Accept: application/json
